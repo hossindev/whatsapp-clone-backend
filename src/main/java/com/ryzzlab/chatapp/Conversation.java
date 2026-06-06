@@ -14,7 +14,8 @@ public class Conversation {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     UUID id;
-    boolean isGroup;
+    @Column(name = "is_group")
+    boolean group;
     String name;
     @CreationTimestamp
     LocalDateTime createdAt;
