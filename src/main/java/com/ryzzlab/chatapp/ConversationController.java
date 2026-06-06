@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
@@ -50,5 +51,14 @@ public class ConversationController {
         conversationMemberRepository.save(member2);
 
         return ResponseEntity.ok(conversation);
+    }
+    @GetMapping
+    public ResponseEntity<?> getConversations(@RequestHeader("Authorization") String authHeader){
+        String userId = jwtService.extractUserId(authHeader.substring(7));
+        List<ConversationMember> memberships = conversationMemberRepository.findByUser_Id(UUID.fromString(userId));
+        List<Conversation> conversations = memberships.stream()
+                .map(ConversationMember::getConversation)
+                .toList();
+        return ResponseEntity.ok(conversations);
     }
 }
