@@ -17,6 +17,8 @@ public class ConversationController {
     UserRepository userRepository;
     @Autowired
     JwtService jwtService;
+    @Autowired
+    ConversationMemberRepository conversationMemberRepository;
 
     @PostMapping()
     public ResponseEntity<?> get_conversations(@RequestBody Map<String, String> body, @RequestHeader("Authorization") String authHeader){
@@ -34,6 +36,19 @@ public class ConversationController {
         Conversation conversation = new Conversation();
         conversation.setGroup(false);
         conversationRepository.save(conversation);
+        User currentUser = new User();
+        currentUser.setId(UUID.fromString(userId));
+
+        ConversationMember member1 = new ConversationMember();
+        member1.setConversation(conversation);
+        member1.setUser(currentUser);
+        conversationMemberRepository.save(member1);
+
+        ConversationMember member2 = new ConversationMember();
+        member2.setConversation(conversation);
+        member2.setUser(otherUser.get());
+        conversationMemberRepository.save(member2);
+
         return ResponseEntity.ok(conversation);
     }
 }
