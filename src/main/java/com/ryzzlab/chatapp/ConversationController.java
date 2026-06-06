@@ -20,6 +20,8 @@ public class ConversationController {
     JwtService jwtService;
     @Autowired
     ConversationMemberRepository conversationMemberRepository;
+    @Autowired
+    MessageRepository messageRepository;
 
     @PostMapping()
     public ResponseEntity<?> get_conversations(@RequestBody Map<String, String> body, @RequestHeader("Authorization") String authHeader){
@@ -60,5 +62,10 @@ public class ConversationController {
                 .map(ConversationMember::getConversation)
                 .toList();
         return ResponseEntity.ok(conversations);
+    }
+    @GetMapping("/{id}/messages")
+    public ResponseEntity<?> getMessages(@PathVariable UUID id, @RequestHeader("Authorization") String authHeader) {
+        List<Message> messages = messageRepository.findByConversationId(id);
+        return ResponseEntity.ok(messages);
     }
 }
