@@ -35,6 +35,15 @@ public class ConversationController {
         if(otherUser.isEmpty()){
             return ResponseEntity.badRequest().body("User not found");
         }
+        List<Conversation> user_conv = conversationMemberRepository.findConversationsByUserId(UUID.fromString(userId));
+        List<Conversation> other_user_conv = conversationMemberRepository.findConversationsByUserId(otherUser.get().getId());
+        Optional<Conversation> existing = user_conv.stream()
+                .filter(other_user_conv::contains)
+                .findFirst();
+
+        if (existing.isPresent()){
+            return ResponseEntity.ok(existing.get());
+        }
 
         Conversation conversation = new Conversation();
         conversation.setGroup(false);

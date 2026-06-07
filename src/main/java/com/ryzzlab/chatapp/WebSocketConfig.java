@@ -3,6 +3,7 @@ package com.ryzzlab.chatapp;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.simp.config.ChannelRegistration;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;
@@ -20,6 +21,9 @@ import org.springframework.messaging.Message;
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     @Autowired
     private JwtService jwtService;
+    @Autowired
+    StringRedisTemplate stringRedisTemplate;
+
     @Override
     public void configureMessageBroker(MessageBrokerRegistry registry) {
 
@@ -44,6 +48,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
                         String token = authHeader.substring(7);
                         String userId = jwtService.extractUserId(token);
                         accessor.setUser(() -> userId);
+                        stringRedisTemplate.opsForValue().set("presence:" + userId, "online");
                     }
                 }
                 return message;
