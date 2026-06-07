@@ -77,4 +77,29 @@ public class ConversationController {
         List<Message> messages = messageRepository.findByConversationId(id);
         return ResponseEntity.ok(messages);
     }
-}
+    @PostMapping("/group")
+    public ResponseEntity<?>  create_group(@RequestBody CreateGroupRequest body, @RequestHeader("Authorization") String authHeader ){
+        String userId = jwtService.extractUserId(authHeader.substring(7));
+        Conversation conversation = new Conversation();
+        conversation.setGroup(true);
+        conversation.setName(body.getName());
+        conversationRepository.save(conversation);
+
+        User currentUser = new User();
+        currentUser.setId(UUID.fromString(userId));
+        ConversationMember me = new ConversationMember();
+        me.setConversation(conversation);
+        me.setUser(currentUser);
+        conversationMemberRepository.save(me);
+        for ( UUID memberId : body.getMemberIds()) {
+                User u = new User();
+                u.setId(memberId);
+                ConversationMember member = new ConversationMember();
+                member.setConversation(conversation);
+                member.setUser(u);
+                conversationMemberRepository.save(member);
+            }
+        return  ResponseEntity.ok(conversation);
+        }
+    }
+
