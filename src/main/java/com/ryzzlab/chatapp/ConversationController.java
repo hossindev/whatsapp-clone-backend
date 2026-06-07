@@ -64,13 +64,26 @@ public class ConversationController {
         return ResponseEntity.ok(conversation);
     }
     @GetMapping
-    public ResponseEntity<?> getConversations(@RequestHeader("Authorization") String authHeader){
+    public ResponseEntity<?> getConversations(@RequestHeader("Authorization") String authHeader) {
         String userId = jwtService.extractUserId(authHeader.substring(7));
         List<ConversationMember> memberships = conversationMemberRepository.findByUser_Id(UUID.fromString(userId));
-        List<Conversation> conversations = memberships.stream()
-                .map(ConversationMember::getConversation)
-                .toList();
-        return ResponseEntity.ok(conversations);
+
+        List<ConversationResponse> result = memberships.stream().map(membership -> {
+            Conversation conv = membership.getConversation();
+            ConversationResponse response = new ConversationResponse();
+            response.setConversation(conv);
+
+            if (!conv.isGroup()) {
+                List<ConversationMember> members = conversationMemberRepository.findByConversation_Id(conv.getId());
+                members.stream()
+                        .filter(m -> !m.getUser().getId().toString().equals(userId))
+                        .findFirst()
+                        .ifPresent(m -> response.setOtherUser(m.getUser()));
+            }
+            return response;
+        }).toList();
+
+        return ResponseEntity.ok(result);
     }
     @GetMapping("/{id}/messages")
     public ResponseEntity<?> getMessages(@PathVariable UUID id, @RequestHeader("Authorization") String authHeader) {
